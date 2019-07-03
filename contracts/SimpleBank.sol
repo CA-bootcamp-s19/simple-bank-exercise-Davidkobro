@@ -8,10 +8,6 @@ pragma solidity ^0.5.0;
 
 contract SimpleBank {
 
-  uint newBalance = 0;
-  address accountAddress = msg.sender;
-
-
     //
     // State variables
     //
@@ -64,8 +60,8 @@ contract SimpleBank {
     // A SPECIAL KEYWORD prevents function from editing state variables;
     // allows function to run locally/off blockchain
     function getBalance(address accountAddress) public pure returns (uint) {
-      return accountAddress.balance;
-        /* Get the balance of the sender of this transaction */
+      address user = msg.sender;
+      return balances[user];        /* Get the balance of the sender of this transaction */
     }
 
     /// @notice Enroll a customer with the bank
