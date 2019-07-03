@@ -108,14 +108,13 @@ contract SimpleBank {
            Subtract the amount from the sender's balance, and try to send that amount of ether
            to the user attempting to withdraw.
            return the user's balance.*/
-        accountAddress = msg.sender;
-        if(withdrawAmount < accountAddress.balance){
-        accountAddress.balance -= withdrawAmount;
-          msg.reciever.balance +=withdrawAmount;
-          newBalance = msg.reciever.balance;
-        }
-        LogWithdrawal(accountAddress, withdrawAmount, newBalance);
-        return accountAddress.balance;
+        address user = msg.sender;
+        require(balances[user]) >= withdrawAmount;
+        balances[user] -= withdrawAmount;
+        user.transfer(withdrawAmount);
+        emit LogWithdrawal(accountAddress, withdrawAmount, newBalance);
+        return balances[user];
+
     }
 
 }
