@@ -41,7 +41,7 @@ contract SimpleBank {
     //
 
     /* Use the appropriate global variable to get the sender of the transaction */
-    constructor(address owner) public {
+    constructor() public {
       owner = msg.sender;
         /* Set the owner to the creator of this contract */
     }
@@ -59,23 +59,18 @@ contract SimpleBank {
     /// @return The balance of the user
     // A SPECIAL KEYWORD prevents function from editing state variables;
     // allows function to run locally/off blockchain
-    function getBalance(address accountAddress) public pure returns (uint) {
-      address user = msg.sender;
+    function getBalance(address user) public view returns (uint) {
+      user = msg.sender;
       return balances[user];        /* Get the balance of the sender of this transaction */
     }
 
     /// @notice Enroll a customer with the bank
     /// @return The users enrolled status
     // Emit the appropriate event
-    function enroll(address accountAddress) public returns (bool){
-      if (enroll(accountAddress) == true){
-        return accountAddress;
-      }
-      else{
-        enroll(accountAddress) = true;
-        emit LogEnrolled(accountAddress);
-        return enroll(accountAddress);
-      }
+    function enroll() public returns (bool){
+      address bank_customer = msg.sender;
+      enrolled[bank_customer] = true;
+      emit LogEnrolled(bank_customer);
     }
 
     /// @notice Deposit ether into bank
@@ -87,11 +82,10 @@ contract SimpleBank {
     function deposit(address accountAddress, uint amount) public payable returns (uint) {
         /* Add the amount to the user's balance, call the event associated with a deposit,
           then return the balance of the user */
-          address user = msg.sender;
-          balances[user] += msg.value;
-          emit LogDepositMade(accountAddress, amount);
-          return balances[user];
-
+          accountAddress = msg.sender;
+          balances[accountAddress] += amount;
+          emit LogDepositMade(msg.sender, amount);
+          return balances[accountAddress];
     }
 
     /// @notice Withdraw ether from bank
@@ -105,10 +99,10 @@ contract SimpleBank {
            to the user attempting to withdraw.
            return the user's balance.*/
         address user = msg.sender;
-        require(balances[user]) >= withdrawAmount;
+        require((balances[user]) >= withdrawAmount);
         balances[user] -= withdrawAmount;
-        user.transfer(withdrawAmount);
-        emit LogWithdrawal(accountAddress, withdrawAmount, newBalance);
+        uint newBalance = balances[user];
+        emit LogWithdrawal(user, withdrawAmount, newBalance);
         return balances[user];
 
     }
