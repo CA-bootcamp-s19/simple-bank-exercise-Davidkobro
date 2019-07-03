@@ -91,10 +91,10 @@ contract SimpleBank {
     function deposit(address accountAddress, uint amount) public payable returns (uint) {
         /* Add the amount to the user's balance, call the event associated with a deposit,
           then return the balance of the user */
-          //msg.sender -= amount ?
-          accountAddress.balance += amount;
+          address user = msg.sender;
+          balances[user] += msg.value;
           emit LogDepositMade(accountAddress, amount);
-          return accountAddress.balance;
+          return balances[user];
 
     }
 
