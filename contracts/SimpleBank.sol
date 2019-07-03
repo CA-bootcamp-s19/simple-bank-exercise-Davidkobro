@@ -8,6 +8,10 @@ pragma solidity ^0.5.0;
 
 contract SimpleBank {
 
+  uint newBalance = 0;
+  address accountAddress = msg.sender;
+
+
     //
     // State variables
     //
@@ -41,7 +45,8 @@ contract SimpleBank {
     //
 
     /* Use the appropriate global variable to get the sender of the transaction */
-    constructor() public {
+    constructor(address owner) public {
+      owner = msg.sender;
         /* Set the owner to the creator of this contract */
     }
 
@@ -58,14 +63,23 @@ contract SimpleBank {
     /// @return The balance of the user
     // A SPECIAL KEYWORD prevents function from editing state variables;
     // allows function to run locally/off blockchain
-    function getBalance() public returns (uint) {
+    function getBalance(address accountAddress) public pure returns (uint) {
+      return accountAddress.balance;
         /* Get the balance of the sender of this transaction */
     }
 
     /// @notice Enroll a customer with the bank
     /// @return The users enrolled status
     // Emit the appropriate event
-    function enroll() public returns (bool){
+    function enroll(address accountAddress) public returns (bool){
+      if (enroll(accountAddress) == true){
+        return accountAddress;
+      }
+      else{
+        enroll(accountAddress) = true;
+        emit LogEnrolled(accountAddress);
+        return enroll(accountAddress);
+      }
     }
 
     /// @notice Deposit ether into bank
@@ -74,9 +88,14 @@ contract SimpleBank {
     // Use the appropriate global variables to get the transaction sender and value
     // Emit the appropriate event
     // Users should be enrolled before they can make deposits
-    function deposit() public returns (uint) {
+    function deposit(address accountAddress, uint amount) public payable returns (uint) {
         /* Add the amount to the user's balance, call the event associated with a deposit,
           then return the balance of the user */
+          //msg.sender -= amount ?
+          accountAddress.balance += amount;
+          emit LogDepositMade(accountAddress, amount);
+          return accountAddress.balance;
+
     }
 
     /// @notice Withdraw ether from bank
@@ -89,6 +108,14 @@ contract SimpleBank {
            Subtract the amount from the sender's balance, and try to send that amount of ether
            to the user attempting to withdraw.
            return the user's balance.*/
+        accountAddress = msg.sender;
+        if(withdrawAmount < accountAddress.balance){
+        accountAddress.balance -= withdrawAmount;
+          msg.reciever.balance +=withdrawAmount;
+          newBalance = msg.reciever.balance;
+        }
+        LogWithdrawal(accountAddress, withdrawAmount, newBalance);
+        return accountAddress.balance;
     }
 
 }
