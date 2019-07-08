@@ -59,9 +59,8 @@ contract SimpleBank {
     /// @return The balance of the user
     // A SPECIAL KEYWORD prevents function from editing state variables;
     // allows function to run locally/off blockchain
-    function getBalance(address user) public view returns (uint) {
-      user = msg.sender;
-      return balances[user];        /* Get the balance of the sender of this transaction */
+    function getBalance() view public returns (uint) {
+      return balances[msg.sender];        /* Get the balance of the sender of this transaction */
     }
 
     /// @notice Enroll a customer with the bank
@@ -79,13 +78,13 @@ contract SimpleBank {
     // Use the appropriate global variables to get the transaction sender and value
     // Emit the appropriate event
     // Users should be enrolled before they can make deposits
-    function deposit(address accountAddress, uint amount) public payable returns (uint) {
+    function deposit() public payable returns (uint) {
         /* Add the amount to the user's balance, call the event associated with a deposit,
           then return the balance of the user */
-          accountAddress = msg.sender;
-          balances[accountAddress] += amount;
+          requre(enroll(msg.sender));
+          balances[msg.sender] += msg.value;
           emit LogDepositMade(msg.sender, amount);
-          return balances[accountAddress];
+          return balances[msg.sender];
     }
 
     /// @notice Withdraw ether from bank
@@ -98,12 +97,12 @@ contract SimpleBank {
            Subtract the amount from the sender's balance, and try to send that amount of ether
            to the user attempting to withdraw.
            return the user's balance.*/
-        address user = msg.sender;
-        require((balances[user]) >= withdrawAmount);
-        balances[user] -= withdrawAmount;
-        uint newBalance = balances[user];
-        emit LogWithdrawal(user, withdrawAmount, newBalance);
-        return balances[user];
+        require(withdrawAmount <= balances[msg.sender]);
+        balances[msg.sender] -= withdrawAmount;
+        msg.sender.transfer(withdrawAmount);
+        uint newBalance = balances[msg.sender];
+        emit LogWithdrawal(msg.sender, withdrawAmount, newBalance);
+        return balances[msg.sender];
 
     }
 
