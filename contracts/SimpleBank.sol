@@ -35,6 +35,29 @@ contract SimpleBank {
     /* Add 3 arguments for this event, an accountAddress, withdrawAmount and a newBalance */
     event LogWithdrawal(address accountAddress, uint amount, uint newBalance);
 
+        //
+        // Modifiers
+        //
+
+        // @notice onlyEnrolled
+        // Ensures the msg.sender has already been enrolled before executing a function
+        modifier onlyEnrolled {
+            require(
+                enrolled[msg.sender] == true,
+                "Only enrolled accounts can call this function."
+            );
+            _;
+        }
+
+        // @notice notEnrolled
+        // Ensures the msg.sender has not already been enrolled before executing a function
+        modifier notEnrolled {
+            require(
+                enrolled[msg.sender] == false,
+                "Only accounts not enrolled can call this function."
+            );
+            _;
+        }
 
     //
     // Functions
@@ -66,10 +89,10 @@ contract SimpleBank {
     /// @notice Enroll a customer with the bank
     /// @return The users enrolled status
     // Emit the appropriate event
-    function enroll() public returns (bool){
-      address bank_customer = msg.sender;
-      enrolled[bank_customer] = true;
-      emit LogEnrolled(bank_customer);
+    function enroll() public notEnrolled returns (bool){
+      enrolled[msg.sender] = true;
+      emit LogEnrolled(msg.sender);
+      return enrolled[msg.sender];
     }
 
     /// @notice Deposit ether into bank
@@ -81,9 +104,9 @@ contract SimpleBank {
     function deposit() public payable returns (uint) {
         /* Add the amount to the user's balance, call the event associated with a deposit,
           then return the balance of the user */
-          requre(enroll(msg.sender));
+          require(enrolled[msg.sender]);
           balances[msg.sender] += msg.value;
-          emit LogDepositMade(msg.sender, amount);
+          emit LogDepositMade(msg.sender, msg.value);
           return balances[msg.sender];
     }
 
